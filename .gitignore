@@ -10,7 +10,7 @@
 /cimgui
 /cimgui.so
 /imgui.ini
-/vert.h
-/frag.h
+/*vert.h
+/*frag.h
 /*.o
 /obj

@@ -56,6 +56,7 @@ typedef struct {
 		  CURSOR_LOCKED
 		, CURSOR_INF
 	} cursor;
+	u8 crush;
 	int wireframe;
 } rubbish_cfg;
 

@@ -1,7 +1,7 @@
 all: demo rubbish.a
 
 clean:
-	rm -rf demo rubbish.a *.o obj vert.h frag.h
+	rm -rf demo rubbish.a *.o obj vert.h frag.h post_vert.h post_frag.h
 
 demo: demo.o rubbish.a
 	clang $^ \
@@ -21,7 +21,7 @@ obj: libglfw3.a
 	mkdir obj && cd obj
 	ar xv $< --output $@
 
-rubbish.o: lib.c bin.h vert.h frag.h
+rubbish.o: lib.c bin.h vert.h frag.h post_vert.h post_frag.h
 	clang -Werror -O0 -ggdb \
 	-DDEBUG -DRUBBISH_IMGUI \
 	-I. \
@@ -32,4 +32,8 @@ gl3w.o: ./gl3w/src/gl3w.c
 vert.h: vert.glsl
 	xxd -i $< > $@
 frag.h: frag.glsl
+	xxd -i $< > $@
+post_vert.h: post_vert.glsl
+	xxd -i $< > $@
+post_frag.h: post_frag.glsl
 	xxd -i $< > $@

@@ -96,6 +96,7 @@ struct {
 	GLint model;
 	GLint col;
 	GLint clear;
+	GLint tex;
 } unif;
 
 void lines_push(const fff a, const fff b, const fff col)
@@ -153,22 +154,26 @@ static void log_gl(
 
 #include "vert.h"
 #include "frag.h"
-GLuint shader_init(GLenum type)
-{
-	const char *dbg;
-	const GLchar *buf;
-	GLint len;
+#include "post_vert.h"
+#include "post_frag.h"
 
+#define SHADER_INIT(T, HANDLE)           \
+	shader_init(                     \
+		GL_ ## T ## _SHADER,     \
+		HANDLE ## _glsl_len,     \
+		(char*) HANDLE ## _glsl, \
+		#HANDLE)
+
+GLuint shader_init(
+	GLenum type,
+	GLint len,
+	const GLchar *buf,
+	const char *handle
+) {
 	switch (type) {
 	case GL_VERTEX_SHADER:
-		buf = (char*)vert_glsl;
-		len = vert_glsl_len;
-		dbg = "vert";
 		break;
 	case GL_FRAGMENT_SHADER:
-		buf = (char*)frag_glsl;
-		len = frag_glsl_len;
-		dbg = "frag";
 		break;
 	default:
 		panic();
@@ -185,42 +190,70 @@ GLuint shader_init(GLenum type)
 	glGetShaderiv(sh, GL_COMPILE_STATUS, &result);
 	if (!result) {
 		glGetShaderInfoLog(sh, 128, NULL, log);
-		fprintf(stderr, "[compile] %s shader: \"%s\"\n", dbg, log);
+		fprintf(stderr, "[compile] %s shader: \"%s\"\n", handle, log);
 		panic();
 	}
 
 	return sh;
 }
 
-static void shaders_init()
-{
-	const GLuint vert = shader_init(GL_VERTEX_SHADER);
-	const GLuint frag = shader_init(GL_FRAGMENT_SHADER);
+struct shaders {
+	GLuint base;
+	GLuint post;
+};
 
-	GLuint prog = glCreateProgram();
-	glAttachShader(prog, vert);
-	glAttachShader(prog, frag);
-	glLinkProgram(prog);
-
+static void shaders_link(
+	const GLuint prog,
+	const GLuint vert,
+	const GLuint frag
+) {
 	static char log[128];
-	memset(log, 0, 128);
 	int result;
 
+	glAttachShader(prog, vert);
+	glAttachShader(prog, frag);
+	glLinkProgram (prog);
+
+	memset(log, 0, 128);
 	glGetProgramiv(prog, GL_LINK_STATUS, &result);
 	if (!result) {
 		glGetProgramInfoLog(prog, 128, NULL, log);
 		fprintf(stderr, "[link] shaders: \"%s\"\n", log);
 		panic();
 	}
+}
 
-	unif.vp    = glGetUniformLocation(prog, "vp");
-	unif.model = glGetUniformLocation(prog, "trs");
-	unif.col   = glGetUniformLocation(prog, "col");
-	unif.clear = glGetUniformLocation(prog, "col_clear");
+static struct shaders shaders_init()
+{
+	struct shaders shaders = {
+		.base = glCreateProgram(),
+		.post = glCreateProgram(),
+	};
 
-	glUseProgram(prog);
+	GLuint vert, frag;
+
+	vert = SHADER_INIT(VERTEX,   vert);
+	frag = SHADER_INIT(FRAGMENT, frag);
+
+	shaders_link(shaders.base, vert, frag);
+	unif.vp    = glGetUniformLocation(shaders.base, "vp");
+	unif.model = glGetUniformLocation(shaders.base, "trs");
+	unif.col   = glGetUniformLocation(shaders.base, "col");
+	unif.clear = glGetUniformLocation(shaders.base, "col_clear");
+
 	glDeleteShader(vert);
 	glDeleteShader(frag);
+
+	vert = SHADER_INIT(VERTEX,   post_vert);
+	frag = SHADER_INIT(FRAGMENT, post_frag);
+
+	shaders_link(shaders.post, vert, frag);
+	unif.tex = glGetUniformLocation(shaders.post, "img");
+
+	glDeleteShader(vert);
+	glDeleteShader(frag);
+
+	return shaders;
 }
 
 static float mouse_dirty;
@@ -282,7 +315,7 @@ void rubbish_run(
 	glDebugMessageCallback(log_gl, 0);
 #endif
 
-	shaders_init();
+	struct shaders shaders = shaders_init();
 
 	glViewport(0, 0, mode->width, mode->height);
 	glEnable(GL_DEPTH_TEST);
@@ -312,6 +345,54 @@ void rubbish_run(
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 	glEnable(GL_DEPTH_TEST);
+
+	GLuint vao_empty;
+	glGenVertexArrays(1, &vao_empty);
+
+	GLuint fb;
+	glGenFramebuffers(1, &fb);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+	const u8 div = 1 << cfg.crush;
+
+	GLuint rtex;
+	glGenTextures(1, &rtex);
+	glBindTexture(GL_TEXTURE_2D, rtex);
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGB,
+		frame.w / div,
+		frame.h / div,
+		0,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		0
+	);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	GLuint rtex_depth;
+	glGenRenderbuffers(1, &rtex_depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rtex_depth);
+	glRenderbufferStorage(
+		GL_RENDERBUFFER,
+		GL_DEPTH_COMPONENT,
+		frame.w / div,
+		frame.h / div
+	);
+
+	glFramebufferRenderbuffer(
+		GL_FRAMEBUFFER,
+		GL_DEPTH_ATTACHMENT,
+		GL_RENDERBUFFER,
+		rtex_depth
+	);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtex, 0);
+	GLenum buf[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, buf);
 
 #ifdef RUBBISH_IMGUI
 	imgui = igCreateContext(NULL);
@@ -349,6 +430,12 @@ void rubbish_run(
 		}
 
 		update();
+
+		glUseProgram(shaders.base);
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fb);
+		glViewport(0, 0, frame.w / div, frame.h / div);
 
 		const m4 vp = cam3_conv(cam, 1);
 		glUniformMatrix4fv(unif.vp, 1, GL_FALSE, vp.s);
@@ -399,12 +486,22 @@ void rubbish_run(
 			);
 
 			glUniform3fv(unif.col, 1, line->col.s);
-			glLineWidth(3.f);
+			glLineWidth(2.f);
 			glDrawArrays(GL_LINES, n, 2);
 
 			off += SIZE_LINE;
 			n += 2;
 		}
+
+		glUseProgram(shaders.post);
+		glBindVertexArray(vao_empty);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, frame.w, frame.h);
+		glClearColor(render.col.x, render.col.y, render.col.z, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 #ifdef RUBBISH_IMGUI
 		igRender();
 		ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
