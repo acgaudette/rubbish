@@ -58,6 +58,7 @@ typedef struct {
 	} cursor;
 	u8 crush;
 	int wireframe;
+	int aa;
 } rubbish_cfg;
 
 void rubbish_run(

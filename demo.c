@@ -10,6 +10,7 @@ static void init()
 static void update()
 {
 	igShowDemoWindow(NULL);
+
 	const icosph ico;
 	mesh mesh = icosph_conv(ico);
 	mesh.trs.pos = (v3) { 0.f, 0.f, 2.f };
@@ -24,6 +25,6 @@ static void update_fixed()
 
 int main()
 {
-	rubbish_cfg cfg = { .wireframe = 1, };
+	rubbish_cfg cfg = { .wireframe = 1, .aa = 1 };
 	rubbish_run(cfg, init, update, update_fixed);
 }

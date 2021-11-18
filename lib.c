@@ -223,11 +223,10 @@ static void shaders_link(
 	}
 }
 
-static struct shaders shaders_init()
+static struct shaders shaders_init(const int aa)
 {
 	struct shaders shaders = {
 		.base = glCreateProgram(),
-		.post = glCreateProgram(),
 	};
 
 	GLuint vert, frag;
@@ -244,6 +243,10 @@ static struct shaders shaders_init()
 	glDeleteShader(vert);
 	glDeleteShader(frag);
 
+	if (aa)
+		return shaders;
+
+	shaders.post = glCreateProgram();
 	vert = SHADER_INIT(VERTEX,   post_vert);
 	frag = SHADER_INIT(FRAGMENT, post_frag);
 
@@ -282,6 +285,8 @@ void rubbish_run(
 	assert(init);
 	assert(update);
 
+	assert(!(cfg.aa && cfg.crush));
+
 #ifdef DEBUG_FPE
 	feenableexcept(FE_DIVBYZERO | FE_INVALID);
 	signal(SIGFPE, fpehandler);
@@ -315,7 +320,7 @@ void rubbish_run(
 	glDebugMessageCallback(log_gl, 0);
 #endif
 
-	struct shaders shaders = shaders_init();
+	struct shaders shaders = shaders_init(cfg.aa);
 
 	glViewport(0, 0, mode->width, mode->height);
 	glEnable(GL_DEPTH_TEST);
@@ -357,18 +362,30 @@ void rubbish_run(
 
 	GLuint rtex;
 	glGenTextures(1, &rtex);
-	glBindTexture(GL_TEXTURE_2D, rtex);
-	glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_RGB,
-		frame.w / div,
-		frame.h / div,
-		0,
-		GL_RGB,
-		GL_UNSIGNED_BYTE,
-		0
-	);
+	if (cfg.aa) {
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, rtex);
+		glTexImage2DMultisample(
+			GL_TEXTURE_2D_MULTISAMPLE,
+			4,
+			GL_RGB,
+			frame.w,
+			frame.h,
+			1
+		);
+	} else {
+		glBindTexture(GL_TEXTURE_2D, rtex);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RGB,
+			frame.w / div,
+			frame.h / div,
+			0,
+			GL_RGB,
+			GL_UNSIGNED_BYTE,
+			0
+		);
+	}
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -376,12 +393,22 @@ void rubbish_run(
 	GLuint rtex_depth;
 	glGenRenderbuffers(1, &rtex_depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rtex_depth);
-	glRenderbufferStorage(
-		GL_RENDERBUFFER,
-		GL_DEPTH_COMPONENT,
-		frame.w / div,
-		frame.h / div
-	);
+	if (cfg.aa) {
+		glRenderbufferStorageMultisample(
+			GL_RENDERBUFFER,
+			4,
+			GL_DEPTH_COMPONENT,
+			frame.w,
+			frame.h
+		);
+	} else {
+		glRenderbufferStorage(
+			GL_RENDERBUFFER,
+			GL_DEPTH_COMPONENT,
+			frame.w / div,
+			frame.h / div
+		);
+	}
 
 	glFramebufferRenderbuffer(
 		GL_FRAMEBUFFER,
@@ -390,7 +417,18 @@ void rubbish_run(
 		rtex_depth
 	);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtex, 0);
+	if (cfg.aa) {
+		glFramebufferTexture2D(
+			GL_FRAMEBUFFER,
+			GL_COLOR_ATTACHMENT0,
+			GL_TEXTURE_2D_MULTISAMPLE,
+			rtex,
+			0
+		);
+	}
+
+	else glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rtex, 0);
+
 	GLenum buf[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, buf);
 
@@ -493,14 +531,31 @@ void rubbish_run(
 			n += 2;
 		}
 
-		glUseProgram(shaders.post);
-		glBindVertexArray(vao_empty);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, frame.w, frame.h);
-		glClearColor(render.col.x, render.col.y, render.col.z, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		if (cfg.aa) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, fb);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			glBlitFramebuffer(
+				0,
+				0,
+				frame.w,
+				frame.h,
+				0,
+				0,
+				frame.w,
+				frame.h,
+				GL_COLOR_BUFFER_BIT,
+				GL_NEAREST
+			);
+		} else {
+			glUseProgram(shaders.post);
+			glBindVertexArray(vao_empty);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glViewport(0, 0, frame.w, frame.h);
+			glClearColor(render.col.x, render.col.y, render.col.z, 1.f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 #ifdef RUBBISH_IMGUI
 		igRender();
