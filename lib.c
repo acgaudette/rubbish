@@ -319,6 +319,7 @@ void rubbish_run(
 		ImGui_ImplGlfw_InitForOpenGL(win, 1);
 		ImGui_ImplOpenGL3_Init(v);
 		igStyleColorsDark(NULL);
+		imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	}
 #endif
 	init();
