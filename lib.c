@@ -114,6 +114,7 @@ mesh mesh_new(const u32 n)
 		.trs = T3_ID,
 		.pts = pts,
 		.col = V3_ONE,
+		.wire = 0,
 	};
 }
 
@@ -283,6 +284,7 @@ void rubbish_run(
 
 	glViewport(0, 0, mode->width, mode->height);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 	frame.w = mode->width;
 	frame.h = mode->height;
@@ -348,15 +350,20 @@ void rubbish_run(
 		glUniformMatrix4fv(unif.vp, 1, GL_FALSE, vp.s);
 		glClearColor(render.col.x, render.col.y, render.col.z, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		if (cfg.wireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else
-			glPolygonMode(GL_FRONT, GL_FILL);
+		glCullFace(GL_BACK);
 
 		GLintptr off = 0;
 		GLsizei n = 0;
 
 		ABUF_FOREACH(render.meshes, mesh) {
+			if (mesh->wire | cfg.wireframe) {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glDisable(GL_CULL_FACE);
+			} else {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glEnable(GL_CULL_FACE);
+			}
+
 			glBufferSubData(
 				GL_ARRAY_BUFFER,
 				off,

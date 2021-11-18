@@ -29,6 +29,7 @@ typedef struct {
 	ttt trs;
 	fff *pts;
 	fff col;
+	int wire;
 } mesh;
 
 typedef struct {
