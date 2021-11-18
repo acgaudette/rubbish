@@ -95,6 +95,7 @@ struct {
 	GLint vp;
 	GLint model;
 	GLint col;
+	GLint clear;
 } unif;
 
 void lines_push(const fff a, const fff b, const fff col)
@@ -215,6 +216,7 @@ static void shaders_init()
 	unif.vp    = glGetUniformLocation(prog, "vp");
 	unif.model = glGetUniformLocation(prog, "trs");
 	unif.col   = glGetUniformLocation(prog, "col");
+	unif.clear = glGetUniformLocation(prog, "col_clear");
 
 	glUseProgram(prog);
 	glDeleteShader(vert);
@@ -351,6 +353,7 @@ void rubbish_run(
 		const m4 vp = cam3_conv(cam, 1);
 		glUniformMatrix4fv(unif.vp, 1, GL_FALSE, vp.s);
 		glClearColor(render.col.x, render.col.y, render.col.z, 1.f);
+		glUniform3fv(unif.clear, 1, render.col.s);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCullFace(GL_BACK);
 
