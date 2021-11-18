@@ -15,7 +15,7 @@ static void update()
 	mesh mesh = icosph_conv(ico);
 	mesh.trs.pos = (v3) { 0.f, 0.f, 2.f };
 	meshes_push(&mesh);
-	cam.pos = (v3) { 0.f, 0.f, -1.f };
+	cam.pos = V3_BCK;
 }
 
 static void update_fixed()
@@ -25,6 +25,6 @@ static void update_fixed()
 
 int main()
 {
-	rubbish_cfg cfg = { .wireframe = 1, .aa = 1 };
+	rubbish_cfg cfg = { .flags = RUBBISH_CFG_WIRE | RUBBISH_CFG_AA, };
 	rubbish_run(cfg, init, update, update_fixed);
 }

@@ -285,7 +285,8 @@ void rubbish_run(
 	assert(init);
 	assert(update);
 
-	assert(!(cfg.aa && cfg.crush));
+	const int aa = cfg.flags & RUBBISH_CFG_WIRE;
+	assert(!(aa && cfg.crush));
 
 #ifdef DEBUG_FPE
 	feenableexcept(FE_DIVBYZERO | FE_INVALID);
@@ -320,7 +321,7 @@ void rubbish_run(
 	glDebugMessageCallback(log_gl, 0);
 #endif
 
-	struct shaders shaders = shaders_init(cfg.aa);
+	struct shaders shaders = shaders_init(aa);
 
 	glViewport(0, 0, mode->width, mode->height);
 	glEnable(GL_DEPTH_TEST);
@@ -362,7 +363,7 @@ void rubbish_run(
 
 	GLuint rtex;
 	glGenTextures(1, &rtex);
-	if (cfg.aa) {
+	if (aa) {
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, rtex);
 		glTexImage2DMultisample(
 			GL_TEXTURE_2D_MULTISAMPLE,
@@ -393,7 +394,7 @@ void rubbish_run(
 	GLuint rtex_depth;
 	glGenRenderbuffers(1, &rtex_depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rtex_depth);
-	if (cfg.aa) {
+	if (aa) {
 		glRenderbufferStorageMultisample(
 			GL_RENDERBUFFER,
 			4,
@@ -417,7 +418,7 @@ void rubbish_run(
 		rtex_depth
 	);
 
-	if (cfg.aa) {
+	if (aa) {
 		glFramebufferTexture2D(
 			GL_FRAMEBUFFER,
 			GL_COLOR_ATTACHMENT0,
@@ -486,7 +487,7 @@ void rubbish_run(
 		GLsizei n = 0;
 
 		ABUF_FOREACH(render.meshes, mesh) {
-			if (mesh->wire | cfg.wireframe) {
+			if (mesh->wire | (cfg.flags & RUBBISH_CFG_WIRE)) {
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				glDisable(GL_CULL_FACE);
 			} else {
@@ -531,7 +532,7 @@ void rubbish_run(
 			n += 2;
 		}
 
-		if (cfg.aa) {
+		if (aa) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fb);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 			glBlitFramebuffer(

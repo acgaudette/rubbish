@@ -24,6 +24,26 @@ extern struct frame {
 extern cam3 cam;
 
 typedef struct {
+	enum {
+		  CURSOR_LOCKED
+		, CURSOR_INF
+	} cursor;
+	enum {
+		  RUBBISH_CFG_NONE = 0x0
+		, RUBBISH_CFG_WIRE = 0x1
+		, RUBBISH_CFG_AA   = 0x2
+	} flags;
+	u8 crush;
+} rubbish_cfg;
+
+void rubbish_run(
+	const rubbish_cfg,
+	void (*init)(void),
+	void (*update)(void),
+	void (*update_fixed)(void)
+);
+
+typedef struct {
 	u32 n; // Tris
 	u32 size;
 	ttt trs;
@@ -38,6 +58,10 @@ typedef struct {
 	v3 col;
 } line;
 
+mesh mesh_new(const u32 n);
+void meshes_push(const mesh*);
+void lines_push(const fff, const fff, const fff);
+
 extern struct mouse {
 	ff pos;
 	ff delta;
@@ -50,26 +74,5 @@ int key_release(const int);
 int btn_held(const int);
 int btn_press(const int);
 int btn_release(const int);
-
-typedef struct {
-	enum {
-		  CURSOR_LOCKED
-		, CURSOR_INF
-	} cursor;
-	u8 crush;
-	int wireframe;
-	int aa;
-} rubbish_cfg;
-
-void rubbish_run(
-	const rubbish_cfg,
-	void (*init)(void),
-	void (*update)(void),
-	void (*update_fixed)(void)
-);
-
-mesh mesh_new(const u32 n);
-void meshes_push(const mesh*);
-void lines_push(const fff, const fff, const fff);
 
 void set_cursor(const int);
