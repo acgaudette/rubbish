@@ -34,6 +34,10 @@ typedef struct {
 		, RUBBISH_CFG_AA   = 0x2
 	} flags;
 	u8 crush;
+	struct shader {
+		unsigned int n;
+		char *raw;
+	} vert, frag;
 } rubbish_cfg;
 
 void rubbish_run(

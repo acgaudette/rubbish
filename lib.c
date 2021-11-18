@@ -165,8 +165,8 @@ static void log_gl(
 		#HANDLE)
 
 GLuint shader_init(
-	GLenum type,
-	GLint len,
+	const GLenum type,
+	const GLint len,
 	const GLchar *buf,
 	const char *handle
 ) {
@@ -190,7 +190,7 @@ GLuint shader_init(
 	glGetShaderiv(sh, GL_COMPILE_STATUS, &result);
 	if (!result) {
 		glGetShaderInfoLog(sh, 128, NULL, log);
-		fprintf(stderr, "[compile] %s shader: \"%s\"\n", handle, log);
+		fprintf(stderr, "[compile] %s shader:\n%s\n", handle, log);
 		panic();
 	}
 
@@ -218,21 +218,38 @@ static void shaders_link(
 	glGetProgramiv(prog, GL_LINK_STATUS, &result);
 	if (!result) {
 		glGetProgramInfoLog(prog, 128, NULL, log);
-		fprintf(stderr, "[link] shaders: \"%s\"\n", log);
+		fprintf(stderr, "[link] shaders:\n%s\n", log);
 		panic();
 	}
 }
 
-static struct shaders shaders_init(const int aa)
-{
+static struct shaders shaders_init(
+	const int aa,
+	const struct shader *vert_in,
+	const struct shader *frag_in
+) {
 	struct shaders shaders = {
 		.base = glCreateProgram(),
 	};
 
 	GLuint vert, frag;
 
-	vert = SHADER_INIT(VERTEX,   vert);
-	frag = SHADER_INIT(FRAGMENT, frag);
+	if (vert_in) {
+		vert = shader_init(
+			GL_VERTEX_SHADER,
+			vert_in->n,
+			vert_in->raw,
+			"vert_user"
+		);
+	} else vert = SHADER_INIT(VERTEX, vert);
+	if (frag_in) {
+		frag = shader_init(
+			GL_FRAGMENT_SHADER,
+			frag_in->n,
+			frag_in->raw,
+			"frag_user"
+		);
+	} else frag = SHADER_INIT(FRAGMENT, frag);
 
 	shaders_link(shaders.base, vert, frag);
 	unif.vp    = glGetUniformLocation(shaders.base, "vp");
@@ -321,7 +338,11 @@ void rubbish_run(
 	glDebugMessageCallback(log_gl, 0);
 #endif
 
-	struct shaders shaders = shaders_init(aa);
+	struct shaders shaders = shaders_init(
+		aa,
+		cfg.vert.n ? &cfg.vert : NULL,
+		cfg.frag.n ? &cfg.frag : NULL
+	);
 
 	glViewport(0, 0, mode->width, mode->height);
 	glEnable(GL_DEPTH_TEST);
