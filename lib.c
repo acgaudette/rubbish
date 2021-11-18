@@ -324,11 +324,12 @@ void rubbish_run(
 #endif
 	init();
 	glfwSetTime(0.0);
-
 	double t_last = 0.f;
+
 	while (!glfwWindowShouldClose(win)) {
 		double t = glfwGetTime();
 		double dt = t - t_last;
+		t_last = t;
 
 		frame_clear();
 #ifdef RUBBISH_IMGUI
