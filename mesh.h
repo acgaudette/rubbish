@@ -168,3 +168,44 @@ static mesh icosph_conv(icosph ico)
 	memcpy(result.pts, &all, 20 * 3 * sizeof(v3));
 	return result;
 }
+
+typedef struct {
+	v3 ext;
+} cubef;
+
+static mesh cubef_conv(cubef cube)
+{
+	mesh result = mesh_new(6 * 2);
+
+	const float xl = -cube.ext.x * .5f;
+	const float xr =  cube.ext.x * .5f;
+
+	const float yl = -cube.ext.y * .5f;
+	const float yr =  cube.ext.y * .5f;
+
+	const float zl = -cube.ext.z * .5f;
+	const float zr =  cube.ext.z * .5f;
+
+	const v3 verts[] = {
+		{ xl, yl, zl }, { xl, yl, zr }, { xr, yl, zr }, { xr, yl, zl }, // Bottom
+		{ xl, yr, zl }, { xl, yr, zr }, { xr, yr, zr }, { xr, yr, zl }, // Top (rev)
+	};
+
+	const v3 all[] = {
+		verts[0], verts[1], verts[2],
+		verts[2], verts[3], verts[0], // Bottom
+		verts[6], verts[5], verts[4],
+		verts[4], verts[7], verts[6], // Top
+		verts[5], verts[1], verts[0],
+		verts[0], verts[4], verts[5], // Left
+		verts[7], verts[3], verts[2],
+		verts[2], verts[6], verts[7], // Right
+		verts[0], verts[3], verts[7],
+		verts[7], verts[4], verts[0], // Back
+		verts[6], verts[2], verts[1],
+		verts[1], verts[5], verts[6], // Front
+	};
+
+	memcpy(result.pts, &all, sizeof(all));
+	return result;
+}
