@@ -38,6 +38,7 @@ typedef struct {
 		unsigned int n;
 		char *raw;
 	} vert, frag;
+	float line_width;
 } rubbish_cfg;
 
 void rubbish_run(

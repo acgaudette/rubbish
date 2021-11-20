@@ -546,7 +546,7 @@ void rubbish_run(
 			);
 
 			glUniform3fv(unif.col, 1, line->col.s);
-			glLineWidth(2.f);
+			glLineWidth(cfg.line_width ?: 1.f);
 			glDrawArrays(GL_LINES, n, 2);
 
 			off += SIZE_LINE;
