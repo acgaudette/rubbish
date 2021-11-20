@@ -546,6 +546,13 @@ void rubbish_run(
 			);
 
 			glUniform3fv(unif.col, 1, line->col.s);
+			glUniformMatrix4fv(
+				unif.model,
+				1,
+				GL_FALSE,
+				M4_ID.s
+			);
+
 			glLineWidth(cfg.line_width ?: 1.f);
 			glDrawArrays(GL_LINES, n, 2);
 
