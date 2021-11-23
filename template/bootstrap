@@ -1,0 +1,11 @@
+#!/bin/sh
+
+RUBBISH_ROOT=".."
+
+! test -f ./rubbish.a && ln -s $RUBBISH_ROOT/rubbish.a && echo ./rubbish.a
+! test -d ./rubbish   && ln -s $RUBBISH_ROOT rubbish   && echo ./rubbish/
+! test -f ./cimgui.so && ln -s $RUBBISH_ROOT/cimgui.so && echo ./cimgui.so
+! test -d ./cimgui    && ln -s $RUBBISH_ROOT/cimgui    && echo ./cimgui/
+! test -d ./GLFW      && ln -s $RUBBISH_ROOT/GLFW      && echo ./GLFW/
+! test -d ./acg && ln -s $RUBBISH_ROOT/acg && echo ./acg/
+! test -d ./alg && ln -s $RUBBISH_ROOT/alg && echo ./alg/

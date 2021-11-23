@@ -1,18 +1,7 @@
-all: demo rubbish.a
+all: rubbish.a
 
 clean:
-	rm -rf demo rubbish.a *.o obj vert.h frag.h post_vert.h post_frag.h
-
-demo: demo.o rubbish.a
-	clang $^ \
-	-lpthread -lm -ldl -lX11 \
-	-L. -l:cimgui.so \
-	-rpath . \
-	-o $@
-demo.o: demo.c mesh.h
-	clang -Werror -O0 -ggdb \
-	-I. -I.. \
-	-c $< -o $@
+	rm -rf rubbish.a *.o obj vert.h frag.h post_vert.h post_frag.h
 
 rubbish.a: rubbish.o gl3w.o obj
 	ar rcs $@ $< gl3w.o obj/*.o
