@@ -18,10 +18,9 @@ static void update()
 	/* Input, mesh rendering */
 
 	if (!key_held(GLFW_KEY_SPACE)) {
-		const icosph ico;
-		mesh mesh = icosph_conv(ico);
-		mesh.trs.pos = (v3) { 0.f, 0.f, 2.f };
-		meshes_push(&mesh);
+		mesh_trs.pos = (v3) { 0.f, 0.f, 2.f };
+		mesh_trs.scale = 1.5f;
+		mesh_ico((ico) { 1.0f });
 	}
 
 	/* Set camera transform */
