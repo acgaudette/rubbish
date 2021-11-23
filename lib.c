@@ -104,10 +104,10 @@ void lines_push(const fff a, const fff b, const fff col)
 	*(line*)abuf_push(render.lines) = (line) { a, b, col };
 }
 
-mesh mesh_new(const u32 n)
+mesh mesh_new(const u32 n, void *mem)
 {
 	u32 size = n * 3 * sizeof(fff);
-	fff *pts = malloc(size);
+	fff *pts = mem ?: malloc(size);
 	assert(pts);
 
 	return (mesh) {
@@ -118,6 +118,11 @@ mesh mesh_new(const u32 n)
 		.col = V3_ONE,
 		.wire = 0,
 	};
+}
+
+void mesh_free(mesh *mesh)
+{
+	free(mesh->pts);
 }
 
 void meshes_push(const mesh *in)
