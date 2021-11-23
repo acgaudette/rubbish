@@ -55,6 +55,7 @@ typedef struct {
 	ttt trs;
 	fff *pts;
 	fff col;
+	fff vfx;
 	int wire;
 } mesh;
 

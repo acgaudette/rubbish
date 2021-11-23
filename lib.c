@@ -95,6 +95,7 @@ struct {
 	GLint vp;
 	GLint model;
 	GLint col;
+	GLint vfx;
 	GLint clear;
 	GLint tex;
 } unif;
@@ -254,6 +255,7 @@ static struct shaders shaders_init(
 	unif.vp    = glGetUniformLocation(shaders.base, "vp");
 	unif.model = glGetUniformLocation(shaders.base, "trs");
 	unif.col   = glGetUniformLocation(shaders.base, "col");
+	unif.vfx   = glGetUniformLocation(shaders.base, "vfx");
 	unif.clear = glGetUniformLocation(shaders.base, "col_clear");
 
 	glDeleteShader(vert);
@@ -526,6 +528,7 @@ void rubbish_run(
 			);
 
 			glUniform3fv(unif.col, 1, mesh->col.s);
+			glUniform3fv(unif.vfx, 1, mesh->vfx.s);
 			glUniformMatrix4fv(
 				unif.model,
 				1,
@@ -548,6 +551,7 @@ void rubbish_run(
 			);
 
 			glUniform3fv(unif.col, 1, line->col.s);
+			glUniform3fv(unif.vfx, 1, V3_ZERO.s);
 			glUniformMatrix4fv(
 				unif.model,
 				1,
