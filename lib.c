@@ -506,6 +506,7 @@ void rubbish_run(
 		glUniform3fv(unif.clear, 1, render.col.s);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCullFace(GL_BACK);
+		glFrontFace(GL_CW);
 
 		GLintptr off = 0;
 		GLsizei n = 0;
