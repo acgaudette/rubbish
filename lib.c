@@ -302,7 +302,7 @@ void rubbish_run(
 	assert(init);
 	assert(update);
 
-	const int aa = cfg.flags & RUBBISH_CFG_WIRE;
+	const int aa = cfg.flags & RUBBISH_CFG_AA;
 	assert(!(aa && cfg.crush));
 
 #ifdef DEBUG_FPE
