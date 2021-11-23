@@ -30,6 +30,7 @@ static GLFWwindow *win;
 #define SIZE_LINE (2 * sizeof(fff))
 #include "bin.h"
 struct _time _time = { .scale = 1.f };
+struct bump_mem bump_mem;
 
 #include "acg/sys.h"
 
@@ -466,7 +467,9 @@ void rubbish_run(
 		imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	}
 #endif
+	bump_init(NULL, 1024 * 1024);
 	init();
+
 	glfwSetTime(0.0);
 	double t_last = 0.f;
 
@@ -475,6 +478,7 @@ void rubbish_run(
 		double dt = t - t_last;
 		t_last = t;
 
+		bump_clear();
 		abuf_clear(render.meshes);
 		if (!(cfg.flags & RUBBISH_CFG_LINE_PERSIST))
 			abuf_clear(render.lines);
