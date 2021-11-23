@@ -505,6 +505,7 @@ void rubbish_run(
 
 		ABUF_FOREACH(render.meshes, mesh) {
 			if (mesh->wire | (cfg.flags & RUBBISH_CFG_WIRE)) {
+				glLineWidth(cfg.line_width ?: 1.f);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				glDisable(GL_CULL_FACE);
 			} else {
