@@ -594,6 +594,7 @@ void rubbish_run(
 			glClearColor(render.col.x, render.col.y, render.col.z, 1.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDisable(GL_CULL_FACE);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 
