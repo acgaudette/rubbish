@@ -127,12 +127,6 @@ void meshes_push(const mesh *in)
 	*(mesh*)abuf_push(render.meshes) = *in;
 }
 
-static void frame_clear()
-{
-	abuf_clear(render.meshes);
-	abuf_clear(render.lines);
-}
-
 static void log_gl(
 	GLenum  _0,
 	GLenum  _1,
@@ -474,7 +468,9 @@ void rubbish_run(
 		double dt = t - t_last;
 		t_last = t;
 
-		frame_clear();
+		abuf_clear(render.meshes);
+		if (!(cfg.flags & RUBBISH_CFG_LINE_PERSIST))
+			abuf_clear(render.lines);
 #ifdef RUBBISH_IMGUI
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
