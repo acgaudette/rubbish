@@ -9,3 +9,5 @@ RUBBISH_ROOT=".."
 ! test -d ./GLFW      && ln -s $RUBBISH_ROOT/GLFW      && echo ./GLFW/
 ! test -d ./acg && ln -s $RUBBISH_ROOT/acg && echo ./acg/
 ! test -d ./alg && ln -s $RUBBISH_ROOT/alg && echo ./alg/
+
+echo done

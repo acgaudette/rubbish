@@ -1,0 +1,3 @@
+#!/bin/sh
+
+rm ./rubbish* ./cimgui* ./GLFW ./acg ./alg
