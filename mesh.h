@@ -12,7 +12,7 @@ static struct verts verts_new(const u32 n, int tmp)
 {
 	struct verts result = { .n = n };
 	const u32 size = result.n * sizeof(fff);
-	result.v = tmp ? bump(size) : alloc(size, ALLOC_SYS);
+	result.v = tmp ? bump_alloc(size) : alloc(size, ALLOC_SYS);
 	assert(result.v);
 	return result;
 }
