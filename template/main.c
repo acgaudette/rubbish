@@ -18,9 +18,9 @@ static void update()
 	/* Input, mesh rendering */
 
 	if (!key_held(GLFW_KEY_SPACE)) {
-		mesh_trs.pos = (v3) { 0.f, 0.f, 2.f };
-		mesh_trs.scale = 1.5f;
-		mesh_ico((ico) { 1.0f });
+		draw.trs.pos = (v3) { 0.f, 0.f, 2.f };
+		draw.trs.scale = 1.5f;
+		draw_ico((ico) { 1.0f });
 	}
 
 	/* Set camera transform */

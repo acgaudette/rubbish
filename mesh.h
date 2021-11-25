@@ -318,49 +318,49 @@ static mesh ico_to_mesh(const ico ico)
 
 /* "Immediate" mesh rendering */
 
-static int mesh_wire;
-static fff mesh_col = V3_ONE;
-static fff mesh_vfx = V3_ZERO;
-static ttt mesh_trs = T3_ID;
+static mesh draw = {
+	.col = V3_ONE,
+	.trs = T3_ID,
+};
 
 static void mesh_draw(mesh mesh)
 {
-	mesh.trs  = mesh_trs;
-	mesh.col  = mesh_col;
-	mesh.vfx  = mesh_vfx;
-	mesh.wire = mesh_wire;
+	mesh.trs = draw.trs;
+	mesh.col = draw.col;
+	mesh.vfx = draw.vfx;
+	mesh.wire = draw.wire;
 	meshes_push(&mesh);
 }
 
-static void mesh_quad(quad quad)
+static void draw_quad(quad quad)
 {
 	quad.flags |= MESH_TMP;
 	mesh mesh = quad_to_mesh(quad);
 	mesh_draw(mesh);
 }
 
-static void mesh_heightmap(heightmap map)
+static void draw_heightmap(heightmap map)
 {
 	map.flags |= MESH_TMP;
 	mesh mesh = heightmap_to_mesh(map);
 	mesh_draw(mesh);
 }
 
-static void mesh_bill(bill bill)
+static void draw_bill(bill bill)
 {
 	bill.flags |= MESH_TMP;
 	mesh mesh = bill_to_mesh(bill);
 	mesh_draw(mesh);
 }
 
-static void mesh_cuboid(cuboid cuboid)
+static void draw_cuboid(cuboid cuboid)
 {
 	cuboid.flags |= MESH_TMP;
 	mesh mesh = cuboid_to_mesh(cuboid);
 	mesh_draw(mesh);
 }
 
-static void mesh_ico(ico ico)
+static void draw_ico(ico ico)
 {
 	ico.flags |= MESH_TMP;
 	mesh mesh = ico_to_mesh(ico);
