@@ -88,4 +88,12 @@ int btn_held(const int);
 int btn_press(const int);
 int btn_release(const int);
 
+#define KEY(E)    (key_held   (GLFW_KEY_ ## E))
+#define KEY_UP(E) (key_release(GLFW_KEY_ ## E))
+#define KEY_DN(E) (key_press  (GLFW_KEY_ ## E))
+
+#define BTN(E)    (btn_held   (GLFW_MOUSE_BUTTON_ ## E))
+#define BTN_UP(E) (btn_release(GLFW_MOUSE_BUTTON_ ## E))
+#define BTN_DN(E) (btn_press  (GLFW_MOUSE_BUTTON_ ## E))
+
 void set_cursor(const int);
