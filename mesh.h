@@ -53,6 +53,115 @@ static mesh quad_to_mesh(const quad quad)
 }
 
 typedef struct {
+	float size;
+	ff anc;
+	u32 res;
+	int border;
+	float (*fn)(const ff);
+	enum mesh_flags flags;
+} heightmap;
+
+static struct verts heightmap_verts(const heightmap map)
+{
+	assert(map.fn);
+	assert(map.res);
+	assert(map.size);
+
+	const u32 n = 6 * map.res * map.res
+		+ 6 * map.res * 4 * map.border;
+	struct verts result = verts_new(n, map.flags & MESH_TMP);
+
+	const float dist = map.size / map.res;
+	const ff off = mulff(subff(map.anc, (ff) { .5f, .5f }), map.size);
+
+	u32 k = 0;
+	for (u32 i = 0; i < map.res; ++i) {
+		for (u32 j = 0; j < map.res; ++j) {
+			const float x0 = (i + 0) * dist;
+			const float x1 = (i + 1) * dist;
+			const float y0 = (j + 0) * dist;
+			const float y1 = (j + 1) * dist;
+
+			const float x0y0 = map.fn((ff) { x0, y0 });
+			const float x0y1 = map.fn((ff) { x0, y1 });
+			const float x1y1 = map.fn((ff) { x1, y1 });
+			const float x1y0 = map.fn((ff) { x1, y0 });
+
+			quad face = {
+				(v3) { x0, x0y0, y0 },
+				(v3) { x0, x0y1, y1 },
+				(v3) { x1, x1y1, y1 },
+				(v3) { x1, x1y0, y0 },
+			};
+
+			for (u32 l = 0; l < 4; ++l)
+				v3_addeq(face.pts + l, v3_padxz(off, 0.f));
+
+			struct verts out = quad_verts(face);
+			memcpy(result.v + k, out.v, 6 * sizeof(v3));
+			free(out.v);
+			k += 6;
+		}
+	}
+
+	if (!map.border)
+		return result;
+
+	const float limit = map.res * dist;
+
+	for (u32 i = 0; i < map.res; ++i) {
+		const float a = map.fn((ff) { i * dist,        0.f });
+		const float b = map.fn((ff) { i * dist + dist, 0.f });
+		const float c = map.fn((ff) { i * dist,        limit });
+		const float d = map.fn((ff) { i * dist + dist, limit });
+		const float e = map.fn((ff) { 0.f,        i * dist });
+		const float f = map.fn((ff) { 0.f, i * dist + dist });
+		const float g = map.fn((ff) { limit,        i * dist });
+		const float h = map.fn((ff) { limit, i * dist + dist });
+
+		quad faces[] = {
+			{
+				(v3) { i * dist,        0.f, 0.f },
+				(v3) { i * dist,          a, 0.f },
+				(v3) { i * dist + dist,   b, 0.f },
+				(v3) { i * dist + dist, 0.f, 0.f },
+			}, {
+				(v3) { i * dist + dist, 0.f, limit },
+				(v3) { i * dist + dist,   d, limit },
+				(v3) { i * dist,          c, limit },
+				(v3) { i * dist,        0.f, limit },
+			}, {
+				(v3) { 0.f, 0.f, i * dist + dist },
+				(v3) { 0.f,   f, i * dist + dist },
+				(v3) { 0.f,   e, i * dist },
+				(v3) { 0.f, 0.f, i * dist },
+			}, {
+				(v3) { limit, 0.f, i * dist },
+				(v3) { limit,   g, i * dist },
+				(v3) { limit,   h, i * dist + dist },
+				(v3) { limit, 0.f, i * dist + dist },
+			}
+		};
+
+		for (u32 j = 0; j < sizeof(faces) / sizeof(quad); ++j) {
+			for (u32 l = 0; l < 4; ++l)
+				v3_addeq(faces[j].pts + l, v3_padxz(off, 0.f));
+			struct verts face = quad_verts(faces[j]);
+			memcpy(result.v + k, face.v, 6 * sizeof(v3));
+			free(face.v);
+			k += 6;
+		}
+	}
+
+	return result;
+}
+
+static mesh heightmap_to_mesh(const heightmap map)
+{
+	return verts_to_mesh(heightmap_verts(map));
+}
+
+typedef struct {
 	ff anc;
 	ff ext;
 	v4 rot;
@@ -227,6 +336,13 @@ static void mesh_quad(quad quad)
 {
 	quad.flags |= MESH_TMP;
 	mesh mesh = quad_to_mesh(quad);
+	mesh_draw(mesh);
+}
+
+static void mesh_heightmap(heightmap map)
+{
+	map.flags |= MESH_TMP;
+	mesh mesh = heightmap_to_mesh(map);
 	mesh_draw(mesh);
 }
 
