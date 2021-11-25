@@ -77,6 +77,7 @@ void lines_push(const fff, const fff, const fff);
 extern struct mouse {
 	ff pos;
 	ff delta;
+	float wheel;
 } mouse;
 
 int key_held(const int);

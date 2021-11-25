@@ -299,6 +299,11 @@ void set_cursor(const int e)
 	mouse_dirty = 0.f;
 }
 
+static void scroll(GLFWwindow *win, double x, double y)
+{
+	mouse.wheel = y;
+}
+
 void rubbish_run(
 	const rubbish_cfg cfg,
 	void (*init)(void),
@@ -334,6 +339,7 @@ void rubbish_run(
 
 	assert(win);
 	glfwMakeContextCurrent(win);
+	glfwSetScrollCallback(win, scroll);
 	set_cursor(cfg.cursor);
 
 	if (gl3wInit())
@@ -607,6 +613,8 @@ void rubbish_run(
 		igRender();
 		ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 #endif
+		mouse.wheel = 0.f;
+
 		glfwSwapBuffers(win);
 		glfwPollEvents();
 
