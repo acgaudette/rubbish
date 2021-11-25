@@ -95,7 +95,7 @@ cam3 cam = CAM3_DEFAULT;
 struct {
 	GLint vp;
 	GLint model;
-	GLint col;
+	GLint col[4];
 	GLint vfx;
 	GLint clear;
 	GLint tex;
@@ -255,9 +255,13 @@ static struct shaders shaders_init(
 	shaders_link(shaders.base, vert, frag);
 	unif.vp    = glGetUniformLocation(shaders.base, "vp");
 	unif.model = glGetUniformLocation(shaders.base, "trs");
-	unif.col   = glGetUniformLocation(shaders.base, "col");
 	unif.vfx   = glGetUniformLocation(shaders.base, "vfx");
 	unif.clear = glGetUniformLocation(shaders.base, "col_clear");
+
+	unif.col[0] = glGetUniformLocation(shaders.base, "col");
+	unif.col[1] = glGetUniformLocation(shaders.base, "col_1");
+	unif.col[2] = glGetUniformLocation(shaders.base, "col_2");
+	unif.col[3] = glGetUniformLocation(shaders.base, "col_3");
 
 	glDeleteShader(vert);
 	glDeleteShader(frag);
@@ -532,7 +536,8 @@ void rubbish_run(
 				mesh->pts
 			);
 
-			glUniform3fv(unif.col, 1, mesh->col.s);
+			for (u32 i = 0; i < 4; ++i)
+				glUniform3fv(unif.col[i], 1, mesh->cols[i].s);
 			glUniform3fv(unif.vfx, 1, mesh->vfx.s);
 			glUniformMatrix4fv(
 				unif.model,
@@ -555,7 +560,7 @@ void rubbish_run(
 				(void*)line
 			);
 
-			glUniform3fv(unif.col, 1, line->col.s);
+			glUniform3fv(unif.col[0], 1, line->col.s);
 			glUniform3fv(unif.vfx, 1, V3_ZERO.s);
 			glUniformMatrix4fv(
 				unif.model,

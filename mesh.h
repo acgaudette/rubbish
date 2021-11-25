@@ -326,9 +326,12 @@ static mesh draw = {
 static void mesh_draw(mesh mesh)
 {
 	mesh.trs = draw.trs;
-	mesh.col = draw.col;
 	mesh.vfx = draw.vfx;
+
 	mesh.wire = draw.wire;
+	for (u32 i = 0; i < 4; ++i)
+		mesh.cols[i] = draw.cols[i];
+
 	meshes_push(&mesh);
 }
 

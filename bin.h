@@ -54,9 +54,13 @@ typedef struct {
 	u32 size;
 	ttt trs;
 	fff *pts;
-	fff col;
 	fff vfx;
 	int wire;
+
+	union {
+		fff col;
+		fff cols[4];
+	};
 } mesh;
 
 typedef struct {
