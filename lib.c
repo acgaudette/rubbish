@@ -474,7 +474,8 @@ void rubbish_run(
 		ImGui_ImplGlfw_InitForOpenGL(win, 1);
 		ImGui_ImplOpenGL3_Init(v);
 		igStyleColorsDark(NULL);
-		imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		if (!(cfg.flags & RUBBISH_CFG_UI_MOUSEONLY))
+			imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	}
 #endif
 	bump_init(NULL, 1024 * 1024);

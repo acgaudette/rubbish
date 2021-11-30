@@ -33,6 +33,7 @@ typedef struct {
 		, RUBBISH_CFG_WIRE = 0x1
 		, RUBBISH_CFG_AA   = 0x2
 		, RUBBISH_CFG_LINE_PERSIST = 0x4
+		, RUBBISH_CFG_UI_MOUSEONLY = 0x8
 	} flags;
 	u8 crush;
 	struct shader {
