@@ -12,6 +12,7 @@
 
 extern struct render {
 	v3 col;
+	int wire;
 	abuf *meshes;
 	abuf *lines;
 } render;
