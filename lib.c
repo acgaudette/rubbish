@@ -106,6 +106,15 @@ void lines_push(const fff a, const fff b, const fff col)
 	*(line*)abuf_push(render.lines) = (line) { a, b, col };
 }
 
+void lines_push_thick(
+	const fff a,
+	const fff b,
+	const fff col,
+	const float thick
+) {
+	*(line*)abuf_push(render.lines) = (line) { a, b, col, thick };
+}
+
 mesh mesh_new(const u32 n, void *mem)
 {
 	u32 size = n * 3 * sizeof(fff);
@@ -577,7 +586,7 @@ void rubbish_run(
 				M4_ID.s
 			);
 
-			glLineWidth(cfg.line_width ?: 1.f);
+			glLineWidth(line->thick ?: cfg.line_width ?: 1.f);
 			glDrawArrays(GL_LINES, n, 2);
 
 			off += SIZE_LINE;

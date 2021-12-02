@@ -69,12 +69,14 @@ typedef struct {
 	v3 beg;
 	v3 end;
 	v3 col;
+	float thick;
 } line;
 
 mesh mesh_new(const u32 n, void*);
 void mesh_free(mesh*);
 void meshes_push(const mesh*);
 void lines_push(const fff, const fff, const fff);
+void lines_push_thick(const fff, const fff, const fff, const float);
 
 extern struct mouse {
 	ff pos;
