@@ -15,7 +15,7 @@ rubbish.o: lib.c bin.h vert.h frag.h post_vert.h post_frag.h
 	-DDEBUG -DRUBBISH_IMGUI \
 	-I. \
 	-c $< -o $@
-gl3w.o: ./gl3w/src/gl3w.c
+gl3w.o: gl3w.c
 	clang -I./gl3w/include -c $< -o $@
 
 vert.h: vert.glsl
